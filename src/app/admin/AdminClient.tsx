@@ -104,7 +104,7 @@ function RunSwitcher({ runs, activeId, onSelect }: { runs: AdminRun[]; activeId:
         </svg>
       </button>
       {open && (
-        <div className="absolute top-full right-0 mt-1 w-64 bg-white border border-[#DDE1E7] rounded-xl shadow-[0_10px_15px_-3px_rgb(0,0,0,0.07)] z-30 py-1">
+        <div className="absolute top-full right-0 mt-1 w-[min(16rem,calc(100vw-2rem))] bg-white border border-[#DDE1E7] rounded-xl shadow-[0_10px_15px_-3px_rgb(0,0,0,0.07)] z-30 py-1">
           {runs.map((run) => (
             <button
               key={run._id}
@@ -165,28 +165,30 @@ function StalledTable({ users }: { users: AdminUser[] }) {
       </div>
       <div className="divide-y divide-[#EEF1F4]">
         {stalled.map((u) => (
-          <div key={u._id} className="flex items-center gap-4 px-5 py-4">
+          <div key={u._id} className="flex items-start gap-3 px-4 sm:px-5 py-4">
             <div className="w-8 h-8 rounded-full bg-[#EEF1F4] flex items-center justify-center text-sm font-medium text-[#4A4F59] flex-shrink-0">
               {u.fullName.charAt(0)}
             </div>
             <div className="flex-1 min-w-0">
               <div className="text-sm font-medium text-[#16181D]">{u.fullName}</div>
-              <div className="text-xs text-[#7B8391] flex items-center gap-2 mt-0.5">
+              <div className="text-xs text-[#7B8391] flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5">
                 {u.quizRole && <span>{ROLE_LABELS[u.quizRole] ?? u.quizRole}</span>}
                 <span>·</span>
                 <span>Last active {timeAgo(u.updatedAt)}</span>
                 {!u.onboardingCompletedAt && <span className="text-[#B42318] font-medium">· Onboarding incomplete</span>}
               </div>
+              <div className="flex items-center gap-2 mt-2">
+                <StatusBadge status={u.learningStatus} />
+                <button
+                  onClick={() => remind(u._id)}
+                  disabled={sending === u._id || sent.has(u._id)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border border-[#DDE1E7] text-[#4A4F59] hover:bg-[#F7F8FA] disabled:opacity-50 transition-all min-h-[36px]"
+                >
+                  <Mail size={12} />
+                  {sent.has(u._id) ? "Sent" : sending === u._id ? "Sending…" : "Remind"}
+                </button>
+              </div>
             </div>
-            <StatusBadge status={u.learningStatus} />
-            <button
-              onClick={() => remind(u._id)}
-              disabled={sending === u._id || sent.has(u._id)}
-              className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border border-[#DDE1E7] text-[#4A4F59] hover:bg-[#F7F8FA] disabled:opacity-50 transition-all min-h-[36px]"
-            >
-              <Mail size={12} />
-              {sent.has(u._id) ? "Sent" : sending === u._id ? "Sending…" : "Remind"}
-            </button>
           </div>
         ))}
       </div>
@@ -318,7 +320,7 @@ export function AdminClient({ users, runs, events }: Props) {
   return (
     <>
       <Navbar variant="app" learnerName="Admin" />
-      <main className="max-w-7xl mx-auto px-6 py-8 space-y-6">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-5 sm:space-y-6">
 
         {/* Header */}
         <div className="flex items-center justify-between flex-wrap gap-4">
@@ -361,7 +363,7 @@ export function AdminClient({ users, runs, events }: Props) {
             <StalledTable users={filteredUsers} />
 
             {/* 2-column: completion + all learners */}
-            <div className="grid lg:grid-cols-2 gap-5">
+            <div className="grid sm:grid-cols-1 lg:grid-cols-2 gap-5">
               <CompletionStats users={filteredUsers} />
 
               <div className="bg-white rounded-xl border border-[#DDE1E7] overflow-hidden">
@@ -370,7 +372,7 @@ export function AdminClient({ users, runs, events }: Props) {
                 </div>
                 <div className="divide-y divide-[#EEF1F4]">
                   {filteredUsers.map((u) => (
-                    <div key={u._id} className="flex items-center gap-3 px-5 py-3.5">
+                    <div key={u._id} className="flex items-center gap-3 px-4 sm:px-5 py-3.5">
                       <div className="w-7 h-7 rounded-full bg-[#EEF1F4] flex items-center justify-center text-xs font-medium text-[#4A4F59] flex-shrink-0">
                         {u.fullName.charAt(0)}
                       </div>

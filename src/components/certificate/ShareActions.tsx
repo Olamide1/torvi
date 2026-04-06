@@ -56,7 +56,7 @@ export function ShareActions({ certId, registryId }: ShareActionsProps) {
       </div>
 
       <p className="text-center text-xs text-[#7B8391]">
-        Verify this certificate at torvi.co/verify/{registryId}
+        Verify this certificate at torvilearning.online/verify/{registryId}
       </p>
     </div>
   );
