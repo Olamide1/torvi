@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, type ReactNode } from "react";
 import type { QuizState, QuizStep } from "@/lib/types/quiz";
+import { trackEvent } from "@/lib/analytics";
 
 interface QuizContextType {
   state: QuizState;
@@ -38,10 +39,10 @@ export function QuizProvider({ children }: { children: ReactNode }) {
     <QuizContext.Provider
       value={{
         state,
-        setRole: (role) => { setState((prev) => ({ ...prev, role })); setTimeout(advance, 200); },
-        setGoal: (goal) => { setState((prev) => ({ ...prev, goal })); setTimeout(advance, 200); },
-        setTimeCommitment: (timeCommitment) => { setState((prev) => ({ ...prev, timeCommitment })); setTimeout(advance, 200); },
-        setFormat: (format) => { setState((prev) => ({ ...prev, format })); setTimeout(advance, 200); },
+        setRole: (role) => { trackEvent("quiz_step_completed", { step: "role", value: role }); setState((prev) => ({ ...prev, role })); setTimeout(advance, 200); },
+        setGoal: (goal) => { trackEvent("quiz_step_completed", { step: "goal", value: goal }); setState((prev) => ({ ...prev, goal })); setTimeout(advance, 200); },
+        setTimeCommitment: (timeCommitment) => { trackEvent("quiz_step_completed", { step: "time", value: timeCommitment }); setState((prev) => ({ ...prev, timeCommitment })); setTimeout(advance, 200); },
+        setFormat: (format) => { trackEvent("quiz_step_completed", { step: "format", value: format }); setState((prev) => ({ ...prev, format })); setTimeout(advance, 200); },
         goToStep: (step) => setState((prev) => ({ ...prev, currentStep: step })),
         goBack: () => {
           setState((prev) => {

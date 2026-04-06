@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useQuiz } from "@/context/QuizContext";
 import { ROLE_OPTIONS, GOAL_OPTIONS, TIME_OPTIONS, FORMAT_OPTIONS } from "@/lib/types/quiz";
 import { storeUserId } from "@/lib/api/client";
+import { trackEvent } from "@/lib/analytics";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
@@ -48,6 +49,7 @@ export function QuizResult() {
   const handleKitSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
+    trackEvent("kit_email_submitted", { role: state.role ?? undefined, goal: state.goal ?? undefined });
     setSending(true);
     setError(null);
     try {
@@ -69,6 +71,7 @@ export function QuizResult() {
       }
       const { user } = await res.json();
       storeUserId(user._id);
+      trackEvent("kit_sent", { role: state.role ?? undefined, goal: state.goal ?? undefined });
       setKitSent(true);
     } catch (err) {
       // If user already exists (duplicate email), still mark as sent
@@ -89,6 +92,7 @@ export function QuizResult() {
       setEnrollError("Enter your email above first, then click Enrol.");
       return;
     }
+    trackEvent("enrol_clicked", { role: state.role ?? undefined });
     setEnrolling(true);
     setEnrollError(null);
     try {
@@ -102,6 +106,7 @@ export function QuizResult() {
         setEnrollError(data.error ?? "Something went wrong.");
         return;
       }
+      trackEvent("checkout_initiated", { role: state.role ?? undefined });
       window.location.href = data.url;
     } catch {
       setEnrollError("Something went wrong. Try again.");

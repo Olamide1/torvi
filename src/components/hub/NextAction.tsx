@@ -1,5 +1,8 @@
+"use client";
+
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { trackEvent } from "@/lib/analytics";
 
 interface NextActionProps {
   week: number;
@@ -53,6 +56,7 @@ export function NextAction({
                 <a
                   key={link.label}
                   href={link.href}
+                  onClick={() => trackEvent("resource_accessed", { label: link.label, href: link.href })}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded border border-[#E7E5E4] bg-[#F5F4F2] text-xs font-medium text-[#78716C] hover:bg-white hover:text-[#1C1917] hover:border-[#D6D3D1] transition-colors"
                 >
                   {link.label}
@@ -64,6 +68,7 @@ export function NextAction({
 
         <Link
           href={ctaHref}
+          onClick={() => trackEvent("guide_opened", { label: ctaLabel, href: ctaHref, week })}
           className="flex-shrink-0 inline-flex items-center gap-2 h-11 px-5 rounded bg-[#1D4ED8] text-white text-sm font-medium hover:bg-[#1e40af] transition-colors min-h-[44px] tracking-[-0.01em]"
         >
           {ctaLabel}

@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
 import { useQuiz } from "@/context/QuizContext";
+import { trackEvent } from "@/lib/analytics";
 import { StepRole } from "./StepRole";
 import { StepBuildGoal } from "./StepBuildGoal";
 import { StepTime } from "./StepTime";
@@ -22,6 +24,14 @@ export function QuizShell() {
   const { state, goBack } = useQuiz();
   const stepIndex = STEP_MAP[state.currentStep];
   const isResult = state.currentStep === "result";
+
+  useEffect(() => { trackEvent("quiz_started"); }, []);
+
+  useEffect(() => {
+    if (state.currentStep === "result") {
+      trackEvent("quiz_result_viewed", { role: state.role ?? undefined });
+    }
+  }, [state.currentStep, state.role]);
 
   return (
     <div className="min-h-screen bg-[#F7F6F3] flex flex-col">

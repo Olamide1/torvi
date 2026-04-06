@@ -1,8 +1,10 @@
 "use client";
 
+import { useEffect } from "react";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { SetupChecklist } from "@/components/mission/SetupChecklist";
 import { mockCurriculum, mockSessions } from "@/lib/mock/curriculum";
+import { trackEvent } from "@/lib/analytics";
 import Link from "next/link";
 
 export function MissionClient() {
@@ -16,6 +18,13 @@ export function MissionClient() {
     user?.trackId && typeof user.trackId === "object" && "name" in user.trackId
       ? (user.trackId as { name: string }).name
       : null;
+
+  useEffect(() => {
+    if (status === "authenticated" && user) {
+      trackEvent("purchase_complete", { track: trackLabel ?? undefined });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status]);
 
   if (status === "loading") {
     return (
