@@ -41,7 +41,7 @@ export interface IUser extends Document {
 const UserSchema = new Schema<IUser>(
   {
     email: { type: String, required: true, unique: true, lowercase: true },
-    fullName: { type: String, required: true },
+    fullName: { type: String, default: "" },
     timezone: { type: String, default: "UTC" },
     trackId: { type: Schema.Types.ObjectId, ref: "Track", default: null },
     archetypeId: { type: Schema.Types.ObjectId, ref: "Archetype", default: null },

@@ -26,17 +26,22 @@ export async function POST(req: Request) {
   try {
     await connectDB();
     const body = await req.json();
-    const user = await User.create(body);
+    const email = body.email?.toLowerCase();
+    if (!email) return NextResponse.json({ error: "email is required" }, { status: 400 });
+
+    // Upsert: create if not exists, return existing if duplicate
+    const isNew = !(await User.exists({ email }));
+    const user = isNew
+      ? await User.create({ ...body, email })
+      : await User.findOne({ email }).lean();
 
     // Send starter kit email to new leads
-    if (body.learningStatus === "lead" && body.email) {
+    if (isNew && body.learningStatus === "lead") {
       const roleLabel = body.roleLabel ?? "your role";
-      sendKitEmail(body.email, roleLabel).catch(() => {
-        // Non-blocking — don't fail the request if email fails
-      });
+      sendKitEmail(email, roleLabel).catch(() => {});
     }
 
-    return NextResponse.json({ user }, { status: 201 });
+    return NextResponse.json({ user }, { status: isNew ? 201 : 200 });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Failed to create user";
     return NextResponse.json({ error: msg }, { status: 500 });

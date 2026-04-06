@@ -303,6 +303,51 @@ function AutomationLog({ events }: { events: AdminEvent[] }) {
   );
 }
 
+function GenerateResourcesButton() {
+  const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [results, setResults] = useState<{ slug: string; status: string }[]>([]);
+
+  async function generate() {
+    setStatus("loading");
+    try {
+      const res = await fetch("/api/admin/generate-resources", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ force: false }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Failed");
+      setResults(data.generated ?? []);
+      setStatus("done");
+    } catch {
+      setStatus("error");
+    }
+  }
+
+  const created = results.filter((r) => r.status === "created").length;
+  const skipped = results.filter((r) => r.status === "skipped").length;
+
+  return (
+    <div className="bg-white rounded-xl border border-[#DDE1E7] p-5 flex items-center justify-between gap-4 flex-wrap">
+      <div>
+        <div className="text-sm font-semibold text-[#16181D]">Kit resources</div>
+        <div className="text-xs text-[#7B8391] mt-0.5">
+          {status === "done"
+            ? `${created} generated, ${skipped} already existed`
+            : "Prompt packs, tool brief, and worksheet — required for kit email links"}
+        </div>
+      </div>
+      <button
+        onClick={generate}
+        disabled={status === "loading" || status === "done"}
+        className="shrink-0 inline-flex items-center h-8 px-4 text-xs font-semibold rounded bg-[#16181D] text-white hover:bg-[#2a2a2a] transition-colors disabled:opacity-50"
+      >
+        {status === "loading" ? "Generating…" : status === "done" ? "Done" : status === "error" ? "Retry" : "Generate resources"}
+      </button>
+    </div>
+  );
+}
+
 export function AdminClient({ users, runs, events }: Props) {
   const [activeRunId, setActiveRunId] = useState(runs[0]?._id ?? "");
   const activeRun = runs.find((r) => r._id === activeRunId);
@@ -393,6 +438,9 @@ export function AdminClient({ users, runs, events }: Props) {
 
         {/* Automation log — always shown */}
         <AutomationLog events={events} />
+
+        {/* Resource generation */}
+        <GenerateResourcesButton />
 
       </main>
     </>

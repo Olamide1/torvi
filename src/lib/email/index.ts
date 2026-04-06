@@ -201,6 +201,7 @@ export async function sendMembershipWelcomeEmail(to: string, name: string) {
 
 export async function sendWelcomeEmail(to: string, name: string, track: string) {
   const firstName = name?.split(" ")[0] ?? "there";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   await getResend().emails.send({
     from: FROM,
     to,
@@ -213,7 +214,7 @@ export async function sendWelcomeEmail(to: string, name: string, track: string) 
           Your place in the ${track} cohort is confirmed. Here's what happens next:
         </p>
         <ol style="font-size:14px;color:#4A4F59;line-height:1.8;padding-left:20px;margin:0 0 28px">
-          <li>Sign in to your hub — your sign-in link is on its way</li>
+          <li>Go to your hub at the link below — you're already signed in</li>
           <li>Complete your learner profile</li>
           <li><a href="https://join.slack.com/t/torvilearning-9lm2359/shared_invite/zt-3um21hbfl-kgECyHcpdKR1DYl6_mJf2Q" style="color:#2F5BFF">Join the cohort Slack workspace</a></li>
           <li>Add office hours to your calendar</li>
@@ -221,6 +222,9 @@ export async function sendWelcomeEmail(to: string, name: string, track: string) 
         <p style="font-size:14px;color:#4A4F59;line-height:1.6;margin:0 0 28px">
           You will ship a working tool in four weeks. One step at a time.
         </p>
+        <a href="${appUrl}/hub" style="display:inline-block;background:#2F5BFF;color:#fff;font-size:14px;font-weight:500;padding:12px 24px;border-radius:8px;text-decoration:none;letter-spacing:-0.01em;margin-bottom:20px">
+          Go to your hub →
+        </a>
         <p style="font-size:13px;color:#7B8391;margin:0">— The Torvi team</p>
       </div>
     `,
