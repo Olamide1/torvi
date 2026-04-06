@@ -1,0 +1,15 @@
+import { NextResponse } from "next/server";
+import { connectDB } from "@/lib/db/mongodb";
+
+export async function GET() {
+  try {
+    await connectDB();
+    return NextResponse.json({
+      status: "ok",
+      db: "connected",
+      timestamp: new Date().toISOString(),
+    });
+  } catch (err) {
+    return NextResponse.json({ status: "error", db: "disconnected" }, { status: 503 });
+  }
+}
