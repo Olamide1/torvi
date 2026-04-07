@@ -4,7 +4,7 @@ function getResend() {
   return new Resend(process.env.RESEND_API_KEY);
 }
 
-const FROM = process.env.RESEND_FROM_EMAIL ?? "Torvi <hello@torvi.co>";
+const FROM = process.env.RESEND_FROM_EMAIL ?? "Torvi <hello@placeholderllc.name.ng>";
 
 export async function sendMagicLink(to: string, link: string) {
   await getResend().emails.send({

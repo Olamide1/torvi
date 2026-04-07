@@ -53,8 +53,8 @@ export function FAQ() {
             </h2>
             <p className="text-sm text-[#78716C] leading-[1.75]">
               Anything else? Email{" "}
-              <a href="mailto:hello@torvi.co" className="text-[#1D4ED8] hover:underline">
-                hello@torvi.co
+              <a href="mailto:hello@placeholderllc.name.ng" className="text-[#1D4ED8] hover:underline">
+                hello@placeholderllc.name.ng
               </a>
             </p>
           </div>

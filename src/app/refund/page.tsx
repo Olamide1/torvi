@@ -52,8 +52,8 @@ export default function RefundPage() {
             <h2 className="font-semibold mb-2">How to request a refund</h2>
             <p className="text-[#78716C]">
               Email{" "}
-              <a href="mailto:hello@torvilearning.online" className="text-[#1D4ED8] hover:underline">
-                hello@torvilearning.online
+              <a href="mailto:hello@placeholderllc.name.ng" className="text-[#1D4ED8] hover:underline">
+                hello@placeholderllc.name.ng
               </a>{" "}
               with your purchase email address. We process refunds within 2 business days. Stripe returns the amount to your original payment method within 5–10 business days depending on your bank.
             </p>
