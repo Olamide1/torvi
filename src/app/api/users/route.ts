@@ -35,9 +35,9 @@ export async function POST(req: Request) {
       ? await User.create({ ...body, email })
       : await User.findOne({ email }).lean();
 
-    // Send starter kit email to new leads
-    if (isNew && body.learningStatus === "lead") {
-      const roleLabel = body.roleLabel ?? "your role";
+    // Send starter kit email to new leads (skip test/example addresses)
+    if (isNew && body.learningStatus === "lead" && !email.endsWith("@example.com")) {
+      const roleLabel = body.roleLabel || "Torvi";
       sendKitEmail(email, roleLabel).catch(() => {});
     }
 

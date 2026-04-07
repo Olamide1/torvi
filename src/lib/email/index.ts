@@ -52,7 +52,7 @@ export async function sendKitEmail(to: string, roleLabel: string) {
   await getResend().emails.send({
     from: FROM,
     to,
-    subject: `Your ${roleLabel} starter kit`,
+    subject: ROLE_TO_SLUG[roleLabel] ? `Your ${roleLabel} starter kit` : "Your Torvi starter kit",
     html: `
       <div style="font-family:Inter,system-ui,sans-serif;max-width:480px;margin:0 auto;padding:40px 24px;color:#16181D">
         <p style="font-size:14px;color:#7B8391;margin:0 0 32px">Torvi</p>
