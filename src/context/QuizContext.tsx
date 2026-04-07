@@ -16,7 +16,7 @@ interface QuizContextType {
 
 const QuizContext = createContext<QuizContextType | null>(null);
 
-const STEP_ORDER: QuizStep[] = ["role", "goal", "time", "format", "result"];
+const STEP_ORDER: QuizStep[] = ["role", "email_capture", "goal", "time", "format", "result"];
 
 export function QuizProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<QuizState>({

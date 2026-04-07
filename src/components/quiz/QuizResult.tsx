@@ -200,7 +200,11 @@ export function QuizResult() {
           {enrolling ? "Redirecting to checkout…" : "Enrol now — start immediately"}
         </button>
         {enrollError && <p className="text-xs text-red-600 mt-2 text-center">{enrollError}</p>}
-        <p className="text-xs text-[#78716C] mt-2 text-center">7-day refund policy · VAT invoices available</p>
+        <p className="text-xs text-[#78716C] mt-2 text-center">
+          <Link href="/refund" className="underline underline-offset-2 hover:text-[#1C1917] transition-colors">
+            7-day refund policy
+          </Link>{" "}· VAT invoices available
+        </p>
       </div>
     </div>
   );

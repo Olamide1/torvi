@@ -4,6 +4,7 @@ import { User } from "@/lib/db/models/User";
 import "@/lib/db/models/Track";
 import "@/lib/db/models/Archetype";
 import { sendKitEmail } from "@/lib/email";
+import { serverTrackLead } from "@/lib/conversions/server";
 
 export async function GET(req: Request) {
   try {
@@ -35,10 +36,11 @@ export async function POST(req: Request) {
       ? await User.create({ ...body, email })
       : await User.findOne({ email }).lean();
 
-    // Send starter kit email to new leads (skip test/example addresses)
+    // Send starter kit email + fire server-side lead conversion for new leads
     if (isNew && body.learningStatus === "lead" && !email.endsWith("@example.com")) {
       const roleLabel = body.roleLabel || "Torvi";
       sendKitEmail(email, roleLabel).catch(() => {});
+      serverTrackLead(email).catch(() => {});
     }
 
     return NextResponse.json({ user }, { status: isNew ? 201 : 200 });

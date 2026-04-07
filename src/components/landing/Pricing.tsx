@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { trackConversion } from "@/lib/analytics";
 
 const COHORT_INCLUDED = [
   "4-week cohort with weekly office hours",
@@ -59,12 +62,18 @@ export function Pricing() {
               ))}
             </ul>
             <Link
-              href="/quiz?intent=enrol"
+              href="/enroll"
+              onClick={() => trackConversion("initiate_checkout", { value: 200, currency: "EUR" })}
               className="inline-flex items-center justify-center h-11 px-6 text-sm font-medium rounded bg-[#1D4ED8] text-white hover:bg-[#1e40af] transition-colors min-h-[44px] tracking-[-0.01em]"
             >
               Enrol now — €200
             </Link>
-            <p className="text-xs text-[#78716C] mt-3 text-center">Start immediately · 7-day refund policy</p>
+            <p className="text-xs text-[#78716C] mt-3 text-center">
+              Start immediately ·{" "}
+              <Link href="/refund" className="underline underline-offset-2 hover:text-[#1C1917] transition-colors">
+                7-day refund policy
+              </Link>
+            </p>
           </div>
 
           {/* Tier 3: Membership upsell */}

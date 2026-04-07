@@ -99,6 +99,8 @@ export async function createUser(payload: {
   trackId?: string;
   archetypeId?: string;
   learningStatus?: string;
+  roleLabel?: string;
+  quizRole?: string;
 }): Promise<TorviUser> {
   const data = await request<{ user: TorviUser }>("/api/users", {
     method: "POST",

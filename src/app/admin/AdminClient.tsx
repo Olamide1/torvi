@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
-import { Users, TrendingUp, AlertTriangle, Award, CheckCircle, Clock, Mail } from "lucide-react";
+import { Users, TrendingUp, AlertTriangle, Award, CheckCircle, Clock, Mail, RefreshCw } from "lucide-react";
 import { StatusBadge } from "@/components/ui/Badge";
 import { ProgressBar } from "@/components/ui/Progress";
 
@@ -350,6 +351,8 @@ function GenerateResourcesButton() {
 
 export function AdminClient({ users, runs, events }: Props) {
   const [activeRunId, setActiveRunId] = useState(runs[0]?._id ?? "");
+  const router = useRouter();
+  const [refreshing, startRefresh] = useTransition();
   const activeRun = runs.find((r) => r._id === activeRunId);
 
   // Filter learners by selected run, fall back to all if run has no runId tracking yet
@@ -378,9 +381,19 @@ export function AdminClient({ users, runs, events }: Props) {
                 : ""}
             </p>
           </div>
-          {runs.length > 0 && (
-            <RunSwitcher runs={runs} activeId={activeRunId} onSelect={setActiveRunId} />
-          )}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => startRefresh(() => router.refresh())}
+              disabled={refreshing}
+              className="flex items-center gap-1.5 h-8 px-3 text-xs font-medium rounded border border-[#DDE1E7] bg-white text-[#4A4F59] hover:bg-[#F7F8FA] disabled:opacity-50 transition-colors"
+            >
+              <RefreshCw size={12} className={refreshing ? "animate-spin" : ""} />
+              {refreshing ? "Refreshing…" : "Refresh"}
+            </button>
+            {runs.length > 0 && (
+              <RunSwitcher runs={runs} activeId={activeRunId} onSelect={setActiveRunId} />
+            )}
+          </div>
         </div>
 
         {/* Empty state — no learners at all */}

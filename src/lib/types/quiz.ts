@@ -1,4 +1,4 @@
-export type QuizStep = "role" | "goal" | "time" | "format" | "result";
+export type QuizStep = "role" | "email_capture" | "goal" | "time" | "format" | "result";
 
 export interface QuizOption {
   id: string;

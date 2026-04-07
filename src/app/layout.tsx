@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { GoogleAnalytics } from "@/components/GoogleAnalytics";
+import { MetaPixel } from "@/components/MetaPixel";
+import { TikTokPixel } from "@/components/TikTokPixel";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -35,6 +37,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${inter.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-[#F7F6F3] text-[#1C1917]">
         <GoogleAnalytics />
+        <MetaPixel />
+        <TikTokPixel />
         {children}
       </body>
     </html>

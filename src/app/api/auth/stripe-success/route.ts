@@ -3,6 +3,7 @@ import Stripe from "stripe";
 import { connectDB } from "@/lib/db/mongodb";
 import { User } from "@/lib/db/models/User";
 import { createSession } from "@/lib/auth/session";
+import { serverTrackPurchase } from "@/lib/conversions/server";
 
 function getStripe() { return new Stripe(process.env.STRIPE_SECRET_KEY!); }
 
@@ -42,6 +43,10 @@ export async function GET(req: Request) {
     }
 
     await createSession(String(user._id), isAdminEmail(email));
+
+    // Server-side purchase conversion (200 EUR cohort)
+    const amountTotal = stripeSession.amount_total ? stripeSession.amount_total / 100 : 200;
+    serverTrackPurchase(email, amountTotal, stripeSession.id, `${appUrl}/mission`).catch(() => {});
 
     const doneUrl = new URL("/auth/done", appUrl);
     doneUrl.searchParams.set("uid", String(user._id));

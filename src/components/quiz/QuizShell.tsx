@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useQuiz } from "@/context/QuizContext";
 import { trackEvent } from "@/lib/analytics";
 import { StepRole } from "./StepRole";
+import { StepEmailCapture } from "./StepEmailCapture";
 import { StepBuildGoal } from "./StepBuildGoal";
 import { StepTime } from "./StepTime";
 import { StepFormat } from "./StepFormat";
@@ -12,8 +13,9 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 const STEPS = ["Role", "Goal", "Time", "Format"];
-const STEP_MAP = {
+const STEP_MAP: Record<string, number> = {
   role: 0,
+  email_capture: 0, // sub-step of Role — Role shows as active, not yet done
   goal: 1,
   time: 2,
   format: 3,
@@ -77,7 +79,7 @@ export function QuizShell() {
       {/* Content */}
       <div className="flex-1 flex flex-col items-center justify-start py-12 px-6">
         <div className="w-full max-w-2xl">
-          {!isResult && stepIndex > 0 && (
+          {!isResult && stepIndex > 0 && state.currentStep !== "email_capture" && (
             <button
               onClick={goBack}
               className="mb-7 flex items-center gap-2 text-sm text-[#78716C] hover:text-[#1C1917] transition-colors"
@@ -88,6 +90,7 @@ export function QuizShell() {
           )}
 
           {state.currentStep === "role" && <StepRole />}
+          {state.currentStep === "email_capture" && <StepEmailCapture />}
           {state.currentStep === "goal" && <StepBuildGoal />}
           {state.currentStep === "time" && <StepTime />}
           {state.currentStep === "format" && <StepFormat />}
