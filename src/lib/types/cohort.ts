@@ -26,16 +26,6 @@ export type RoleTrack =
   | "team_lead"
   | "exec";
 
-export interface Cohort {
-  id: string;
-  name: string;
-  startDate: string;
-  endDate: string;
-  maxSeats: number;
-  seatsUsed: number;
-  status: "upcoming" | "active" | "completed";
-}
-
 export interface Learner {
   id: string;
   email: string;

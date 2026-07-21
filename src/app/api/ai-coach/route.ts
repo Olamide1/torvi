@@ -4,6 +4,8 @@ import { connectDB } from "@/lib/db/mongodb";
 import { AIHelpThread } from "@/lib/db/models/AIHelpThread";
 import { User } from "@/lib/db/models/User";
 import { Guide } from "@/lib/db/models/Guide";
+import "@/lib/db/models/Track";
+import "@/lib/db/models/Archetype";
 
 const openai = process.env.OPENAI_API_KEY
   ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
@@ -52,18 +54,24 @@ export async function POST(req: Request) {
         ? (user.archetypeId as { name: string }).name
         : "your build type";
 
-    // Path-aware guide retrieval — week + track + archetype priority
-    const contextQuery: Record<string, unknown> = {
-      weekId: user.currentWeek,
-      $or: [{ trackId: user.trackId }, { trackId: null }],
-    };
-    if (user.archetypeId) {
-      contextQuery.$or = [
-        { archetypeId: user.archetypeId },
-        { archetypeId: null, trackId: user.trackId },
-        { trackId: null },
-      ];
-    }
+    // Path-aware guide retrieval — week + track + archetype priority.
+    // Track-level and archetype-specific guides share the same trackId, so
+    // without archetypeId set we must exclude archetype-specific guides
+    // explicitly, or every archetype's guide for this week would match.
+    const contextQuery: Record<string, unknown> = user.archetypeId
+      ? {
+          weekId: user.currentWeek,
+          $or: [
+            { archetypeId: user.archetypeId },
+            { archetypeId: null, trackId: user.trackId },
+            { trackId: null },
+          ],
+        }
+      : {
+          weekId: user.currentWeek,
+          archetypeId: null,
+          $or: [{ trackId: user.trackId }, { trackId: null }],
+        };
     const relevantGuides = await Guide.find(contextQuery)
       .select("title purpose expectedOutput commonMistakes doneChecklist")
       .limit(5)

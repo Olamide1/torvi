@@ -29,13 +29,3 @@ export interface Resource {
   tags: string[];
   url: string;
 }
-
-export interface LiveSession {
-  id: string;
-  title: string;
-  type: "workshop" | "office_hours" | "q_and_a";
-  date: string;
-  duration: string;
-  joinUrl: string;
-  replayUrl?: string;
-}

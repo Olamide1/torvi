@@ -140,7 +140,7 @@ export async function sendCertificateEmail(
           Your certificate for <strong>${toolTitle}</strong> has been issued.
         </p>
         <p style="font-size:13px;color:#7B8391;margin:0 0 28px">Certificate number: ${certNumber}</p>
-        <a href="${appUrl}/certificate" style="display:inline-block;background:#2F5BFF;color:#fff;font-size:14px;font-weight:500;padding:12px 24px;border-radius:8px;text-decoration:none;letter-spacing:-0.01em;margin-bottom:16px">
+        <a href="${appUrl}/certificate/${certNumber}" style="display:inline-block;background:#2F5BFF;color:#fff;font-size:14px;font-weight:500;padding:12px 24px;border-radius:8px;text-decoration:none;letter-spacing:-0.01em;margin-bottom:16px">
           View your certificate
         </a>
         <p style="font-size:13px;color:#7B8391;margin:0">— The Torvi team</p>

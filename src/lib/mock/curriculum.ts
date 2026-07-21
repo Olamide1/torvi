@@ -1,4 +1,4 @@
-import type { WeekOutput, Resource, LiveSession } from "../types/curriculum";
+import type { WeekOutput, Resource } from "../types/curriculum";
 
 export const mockCurriculum: WeekOutput[] = [
   {
@@ -103,31 +103,4 @@ export const mockResources: Resource[] = [
   { id: "r8", title: "Ops Automation Examples", type: "example", roleTrack: "ops_leader", tags: ["ops", "automation"], url: "#" },
   { id: "r9", title: "Stakeholder Demo Template", type: "template", tags: ["demo", "week-3"], url: "#" },
   { id: "r10", title: "Rollout Checklist", type: "template", tags: ["week-4", "ship"], url: "#" },
-];
-
-export const mockSessions: LiveSession[] = [
-  {
-    id: "s1",
-    title: "Week 2 Workshop: Making It Usable",
-    type: "workshop",
-    date: "2026-04-17T16:00:00Z",
-    duration: "90 min",
-    joinUrl: "#",
-  },
-  {
-    id: "s2",
-    title: "Office Hours",
-    type: "office_hours",
-    date: "2026-04-19T10:00:00Z",
-    duration: "60 min",
-    joinUrl: "#",
-  },
-  {
-    id: "s3",
-    title: "Week 3 Workshop: Peer Review",
-    type: "workshop",
-    date: "2026-04-24T16:00:00Z",
-    duration: "90 min",
-    joinUrl: "#",
-  },
 ];

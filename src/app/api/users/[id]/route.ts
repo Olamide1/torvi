@@ -33,3 +33,15 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     return NextResponse.json({ error: "Failed to update user" }, { status: 500 });
   }
 }
+
+export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    await connectDB();
+    const { id } = await params;
+    const user = await User.findByIdAndDelete(id).lean();
+    if (!user) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    return NextResponse.json({ error: "Failed to delete user" }, { status: 500 });
+  }
+}

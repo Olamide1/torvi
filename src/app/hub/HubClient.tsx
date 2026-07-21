@@ -18,6 +18,7 @@ import { ResourceSearch } from "@/components/hub/ResourceSearch";
 import { CommunityShortcuts } from "@/components/hub/CommunityShortcuts";
 import { OutputTracker } from "@/components/hub/OutputTracker";
 import { MemberView } from "@/components/hub/MemberView";
+import { ArchetypeSelector } from "@/components/mission/ArchetypeSelector";
 import { mockCurrentLearner } from "@/lib/mock/learners";
 import { mockCurriculum, mockResources } from "@/lib/mock/curriculum";
 import type { Learner } from "@/lib/types/cohort";
@@ -51,7 +52,7 @@ function trackNameToRoleSlug(trackName: string | null): string | undefined {
 }
 
 export function HubClient() {
-  const { user, status } = useCurrentUser();
+  const { user, status, reload } = useCurrentUser();
   const router = useRouter();
   const [guides, setGuides] = useState<Guide[]>([]);
   const [artifacts, setArtifacts] = useState<Artifact[]>([]);
@@ -83,6 +84,13 @@ export function HubClient() {
 
   const roleSlug = trackNameToRoleSlug(trackLabel);
 
+  const archetypeId =
+    user?.archetypeId && typeof user.archetypeId === "object" && "_id" in user.archetypeId
+      ? (user.archetypeId as { _id: string })._id
+      : typeof user?.archetypeId === "string"
+      ? user.archetypeId
+      : undefined;
+
   const isMember = user?.learningStatus === "member_active";
 
   useEffect(() => {
@@ -91,9 +99,9 @@ export function HubClient() {
     // Members get all resources; active learners get their track's resources
     getResources(isMember ? undefined : roleSlug).then(setDbResources).catch(() => {});
     if (isMember) return; // members don't need guides/artifacts
-    getGuides({ weekId: week, trackId }).then(setGuides).catch(() => {});
+    getGuides({ weekId: week, trackId, archetypeId }).then(setGuides).catch(() => {});
     getUserArtifacts(user._id).then(setArtifacts).catch(() => {});
-  }, [user, trackId, roleSlug, isMember]);
+  }, [user, trackId, archetypeId, roleSlug, isMember]);
 
   // --- Current week ---
   const currentWeekNum = user
@@ -208,6 +216,13 @@ export function HubClient() {
               <span className="font-semibold">Payment issue on your membership.</span> Please update your payment method in Stripe to keep access.
             </p>
           </div>
+        </div>
+      )}
+
+      {/* Archetype nudge — only if they skipped it on Mission */}
+      {!isMember && user && trackId && !archetypeId && (
+        <div className="max-w-7xl mx-auto px-6 sm:px-10 pt-6">
+          <ArchetypeSelector userId={user._id} trackId={trackId} onSelected={reload} />
         </div>
       )}
 

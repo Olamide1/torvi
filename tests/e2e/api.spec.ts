@@ -12,6 +12,15 @@ test.describe("API — health check", () => {
 });
 
 test.describe("API — users", () => {
+  const createdUserIds: string[] = [];
+
+  test.afterEach(async ({ request }) => {
+    while (createdUserIds.length > 0) {
+      const id = createdUserIds.pop();
+      await request.delete(`/api/users/${id}`).catch(() => {});
+    }
+  });
+
   test("POST /api/users creates a lead user", async ({ request }) => {
     const email = `test_lead_${Date.now()}@example.com`;
     const res = await request.post("/api/users", {
@@ -29,14 +38,16 @@ test.describe("API — users", () => {
     expect(body.user).toBeTruthy();
     expect(body.user.email).toBe(email);
     expect(body.user.learningStatus).toBe("lead");
+    createdUserIds.push(body.user._id);
   });
 
   test("POST /api/users with duplicate email returns existing user", async ({ request }) => {
     const email = `test_dup_${Date.now()}@example.com`;
     // First create
-    await request.post("/api/users", {
+    const first = await request.post("/api/users", {
       data: { email, fullName: "", learningStatus: "lead" },
     });
+    createdUserIds.push((await first.json()).user._id);
     // Second create — should return existing user (200) not error
     const res = await request.post("/api/users", {
       data: { email, fullName: "", learningStatus: "lead" },
@@ -49,9 +60,10 @@ test.describe("API — users", () => {
 
   test("GET /api/users?email= returns matching user", async ({ request }) => {
     const email = `test_get_${Date.now()}@example.com`;
-    await request.post("/api/users", {
+    const created = await request.post("/api/users", {
       data: { email, learningStatus: "lead" },
     });
+    createdUserIds.push((await created.json()).user._id);
     const res = await request.get(`/api/users?email=${encodeURIComponent(email)}`);
     expect(res.status()).toBe(200);
     const body = await res.json();

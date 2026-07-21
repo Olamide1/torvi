@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db/mongodb";
 import { Archetype } from "@/lib/db/models/Archetype";
+import "@/lib/db/models/Track";
 
 export async function GET(req: Request) {
   try {

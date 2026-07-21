@@ -1,16 +1,40 @@
-import { mockCertificates } from "@/lib/mock/certificates";
+import { connectDB } from "@/lib/db/mongodb";
+import { Certificate } from "@/lib/db/models/Certificate";
+import "@/lib/db/models/User";
+import "@/lib/db/models/Track";
+import "@/lib/db/models/Run";
 import { ShareActions } from "@/components/certificate/ShareActions";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Check } from "lucide-react";
 
-export async function generateStaticParams() {
-  return mockCertificates.map((cert) => ({ id: cert.id }));
+interface Props {
+  params: Promise<{ id: string }>;
 }
 
-export default async function CertificatePage({ params }: { params: Promise<{ id: string }> }) {
+async function getCertificate(certificateNumber: string) {
+  await connectDB();
+  const cert = await Certificate.findOne({
+    certificateNumber,
+    status: "active",
+  })
+    .populate<{ userId: { fullName: string } }>("userId", "fullName")
+    .populate<{ trackId: { name: string } }>("trackId", "name")
+    .populate<{ runId: { name: string } }>("runId", "name")
+    .lean();
+  return cert;
+}
+
+export async function generateMetadata({ params }: Props) {
   const { id } = await params;
-  const cert = mockCertificates.find((c) => c.id === id);
+  const cert = await getCertificate(id);
+  if (!cert) return { title: "Certificate — Torvi" };
+  return { title: `${cert.userId?.fullName ?? "Certificate"} — Torvi` };
+}
+
+export default async function CertificatePage({ params }: Props) {
+  const { id } = await params;
+  const cert = await getCertificate(id);
   if (!cert) notFound();
 
   return (
@@ -48,9 +72,9 @@ export default async function CertificatePage({ params }: { params: Promise<{ id
               </div>
 
               <div className="space-y-1">
-                <h1 className="text-3xl font-semibold text-[#16181D] tracking-tight">{cert.learnerName}</h1>
+                <h1 className="text-3xl font-semibold text-[#16181D] tracking-tight">{cert.userId?.fullName ?? "A Torvi learner"}</h1>
                 <div className="text-sm text-[#4A4F59]">
-                  {cert.roleTrack} · {cert.cohortName}
+                  {cert.trackId?.name} · {cert.runId?.name}
                 </div>
               </div>
 
@@ -60,34 +84,45 @@ export default async function CertificatePage({ params }: { params: Promise<{ id
                 has successfully completed the Torvi cohort programme and shipped the following work:
               </p>
 
-              <ul className="text-left space-y-2.5 max-w-sm mx-auto">
-                {cert.outcomes.map((outcome) => (
-                  <li key={outcome} className="flex items-start gap-3 text-sm text-[#16181D]">
-                    <div className="flex-shrink-0 w-5 h-5 rounded-full bg-[#E2F6EA] flex items-center justify-center mt-0.5">
-                      <Check size={10} className="text-[#157347]" />
-                    </div>
-                    {outcome}
-                  </li>
-                ))}
-              </ul>
+              <div className="text-left space-y-2.5 max-w-sm mx-auto">
+                <div className="flex items-start gap-3 text-sm text-[#16181D]">
+                  <div className="flex-shrink-0 w-5 h-5 rounded-full bg-[#E2F6EA] flex items-center justify-center mt-0.5">
+                    <Check size={10} className="text-[#157347]" />
+                  </div>
+                  <span className="font-medium">{cert.toolTitle}</span>
+                </div>
+                {cert.toolDescription && (
+                  <p className="pl-8 text-sm text-[#4A4F59]">{cert.toolDescription}</p>
+                )}
+                {cert.submissionUrl && (
+                  <a
+                    href={cert.submissionUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="pl-8 block text-sm text-[#2F5BFF] hover:underline"
+                  >
+                    View the shipped tool ↗
+                  </a>
+                )}
+              </div>
 
               <div className="w-16 h-px bg-[#DDE1E7] mx-auto" />
 
               <div className="space-y-1">
                 <div className="text-sm font-medium text-[#16181D]">
                   Completed{" "}
-                  {new Date(cert.completionDate).toLocaleDateString("en-GB", {
+                  {new Date(cert.issuedAt).toLocaleDateString("en-GB", {
                     day: "numeric",
                     month: "long",
                     year: "numeric",
                   })}
                 </div>
-                <div className="text-xs text-[#7B8391] font-mono">{cert.registryId}</div>
+                <div className="text-xs text-[#7B8391] font-mono">{cert.certificateNumber}</div>
               </div>
             </div>
           </div>
 
-          <ShareActions certId={cert.id} registryId={cert.registryId} />
+          <ShareActions certId={cert.certificateNumber} registryId={cert.certificateNumber} />
         </div>
       </main>
     </div>

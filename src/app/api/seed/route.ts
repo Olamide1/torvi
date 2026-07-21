@@ -6,7 +6,8 @@ import { Archetype } from "@/lib/db/models/Archetype";
 import { Run } from "@/lib/db/models/Run";
 import { Guide } from "@/lib/db/models/Guide";
 import { GuideStep } from "@/lib/db/models/GuideStep";
-import { CURRICULUM } from "@/lib/seed/curriculum";
+import { CURRICULUM, RETIRED_GENERIC_SLUGS } from "@/lib/seed/curriculum";
+import { ARCHETYPE_CURRICULUM } from "@/lib/seed/curriculum-archetypes";
 
 const TRACKS = [
   {
@@ -70,14 +71,16 @@ export async function POST(req: Request) {
 
     // Upsert archetypes
     let archetypeCount = 0;
+    const createdArchetypes: Record<string, { _id: mongoose.Types.ObjectId }> = {};
     for (const [trackSlug, archetypes] of Object.entries(ARCHETYPES_BY_TRACK)) {
       const track = createdTracks[trackSlug];
       for (const archetypeData of archetypes) {
-        await Archetype.findOneAndUpdate(
+        const archetype = await Archetype.findOneAndUpdate(
           { trackId: track._id, slug: archetypeData.slug },
           { ...archetypeData, trackId: track._id },
           { upsert: true, new: true, setDefaultsOnInsert: true }
         );
+        createdArchetypes[`${trackSlug}:${archetypeData.slug}`] = archetype;
         archetypeCount++;
       }
     }
@@ -97,14 +100,16 @@ export async function POST(req: Request) {
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
 
-    // Seed curriculum guides + steps
+    // Seed curriculum guides + steps (track-specific)
     let guidesUpserted = 0;
     let stepsUpserted = 0;
     for (const guideData of CURRICULUM) {
-      const { steps, ...guideFields } = guideData;
+      const { steps, trackSlug, ...guideFields } = guideData;
+      const track = createdTracks[trackSlug];
+      if (!track) throw new Error(`Unknown trackSlug in curriculum: ${trackSlug}`);
       const guide = await Guide.findOneAndUpdate(
         { slug: guideFields.slug },
-        { ...guideFields, trackId: null, archetypeId: null, nextGuideId: null, stepCount: steps.length },
+        { ...guideFields, trackId: track._id, archetypeId: null, nextGuideId: null, stepCount: steps.length },
         { upsert: true, new: true, setDefaultsOnInsert: true }
       );
       guidesUpserted++;
@@ -118,6 +123,40 @@ export async function POST(req: Request) {
       }
     }
 
+    // Seed archetype-specific guides + steps
+    let archetypeGuidesUpserted = 0;
+    let archetypeStepsUpserted = 0;
+    for (const guideData of ARCHETYPE_CURRICULUM) {
+      const { steps, trackSlug, archetypeSlug, ...guideFields } = guideData;
+      const track = createdTracks[trackSlug];
+      if (!track) throw new Error(`Unknown trackSlug in archetype curriculum: ${trackSlug}`);
+      const archetype = createdArchetypes[`${trackSlug}:${archetypeSlug}`];
+      if (!archetype) throw new Error(`Unknown archetypeSlug in archetype curriculum: ${trackSlug}:${archetypeSlug}`);
+      const guide = await Guide.findOneAndUpdate(
+        { slug: guideFields.slug },
+        { ...guideFields, trackId: track._id, archetypeId: archetype._id, nextGuideId: null, stepCount: steps.length },
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      );
+      archetypeGuidesUpserted++;
+      for (const step of steps) {
+        await GuideStep.findOneAndUpdate(
+          { guideId: guide._id as mongoose.Types.ObjectId, order: step.order },
+          { ...step, guideId: guide._id as mongoose.Types.ObjectId },
+          { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
+        archetypeStepsUpserted++;
+      }
+    }
+
+    // Retire the old generic (trackId: null) weekly guides
+    let retiredGuides = 0;
+    const staleGuides = await Guide.find({ slug: { $in: RETIRED_GENERIC_SLUGS } }).lean();
+    for (const stale of staleGuides) {
+      await GuideStep.deleteMany({ guideId: stale._id });
+      await Guide.deleteOne({ _id: stale._id });
+      retiredGuides++;
+    }
+
     return NextResponse.json({
       message: "Seed complete",
       tracks: Object.keys(createdTracks).length,
@@ -125,6 +164,9 @@ export async function POST(req: Request) {
       runs: 1,
       guides: guidesUpserted,
       steps: stepsUpserted,
+      archetypeGuides: archetypeGuidesUpserted,
+      archetypeSteps: archetypeStepsUpserted,
+      retiredGuides,
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Seed failed";

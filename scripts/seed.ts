@@ -38,7 +38,8 @@ import { Archetype } from "../src/lib/db/models/Archetype";
 import { Run } from "../src/lib/db/models/Run";
 import { Guide } from "../src/lib/db/models/Guide";
 import { GuideStep } from "../src/lib/db/models/GuideStep";
-import { CURRICULUM } from "../src/lib/seed/curriculum";
+import { CURRICULUM, RETIRED_GENERIC_SLUGS } from "../src/lib/seed/curriculum";
+import { ARCHETYPE_CURRICULUM } from "../src/lib/seed/curriculum-archetypes";
 
 const MONGODB_URI = process.env.MONGODB_URI ?? "mongodb://localhost:27017/torvi";
 
@@ -148,14 +149,16 @@ async function main() {
 
   // ── Archetypes ───────────────────────────────────────────────────────
   let archetypeCount = 0;
+  const createdArchetypes: Record<string, { _id: mongoose.Types.ObjectId }> = {};
   for (const [trackSlug, archetypes] of Object.entries(ARCHETYPES_BY_TRACK)) {
     const track = createdTracks[trackSlug];
     for (const a of archetypes) {
-      await Archetype.findOneAndUpdate(
+      const archetype = await Archetype.findOneAndUpdate(
         { trackId: track._id, slug: a.slug },
         { ...a, trackId: track._id },
         { upsert: true, new: true, setDefaultsOnInsert: true }
       );
+      createdArchetypes[`${trackSlug}:${a.slug}`] = archetype;
       archetypeCount++;
       console.log(`  Archetype: ${a.name}`);
     }
@@ -177,14 +180,16 @@ async function main() {
   );
   console.log("\nRun: Run 001 — Founding");
 
-  // ── Guides + Steps ────────────────────────────────────────────────────
+  // ── Guides + Steps (track-specific) ─────────────────────────────────────
   let guidesUpserted = 0;
   let stepsUpserted = 0;
   for (const guideData of CURRICULUM) {
-    const { steps, ...guideFields } = guideData;
+    const { steps, trackSlug, ...guideFields } = guideData;
+    const track = createdTracks[trackSlug];
+    if (!track) throw new Error(`Unknown trackSlug in curriculum: ${trackSlug}`);
     const guide = await Guide.findOneAndUpdate(
       { slug: guideFields.slug },
-      { ...guideFields, trackId: null, archetypeId: null, nextGuideId: null, stepCount: steps.length },
+      { ...guideFields, trackId: track._id, archetypeId: null, nextGuideId: null, stepCount: steps.length },
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
     guidesUpserted++;
@@ -196,13 +201,55 @@ async function main() {
       );
       stepsUpserted++;
     }
-    console.log(`Guide (Week ${guideFields.weekId}): ${guideFields.title}`);
+    console.log(`Guide (Week ${guideFields.weekId}, ${trackSlug}): ${guideFields.title}`);
+  }
+
+  // ── Archetype-specific Guides + Steps ───────────────────────────────────
+  let archetypeGuidesUpserted = 0;
+  let archetypeStepsUpserted = 0;
+  for (const guideData of ARCHETYPE_CURRICULUM) {
+    const { steps, trackSlug, archetypeSlug, ...guideFields } = guideData;
+    const track = createdTracks[trackSlug];
+    if (!track) throw new Error(`Unknown trackSlug in archetype curriculum: ${trackSlug}`);
+    const archetype = createdArchetypes[`${trackSlug}:${archetypeSlug}`];
+    if (!archetype) throw new Error(`Unknown archetypeSlug in archetype curriculum: ${trackSlug}:${archetypeSlug}`);
+    const guide = await Guide.findOneAndUpdate(
+      { slug: guideFields.slug },
+      { ...guideFields, trackId: track._id, archetypeId: archetype._id, nextGuideId: null, stepCount: steps.length },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+    archetypeGuidesUpserted++;
+    for (const step of steps) {
+      await GuideStep.findOneAndUpdate(
+        { guideId: guide._id as mongoose.Types.ObjectId, order: step.order },
+        { ...step, guideId: guide._id as mongoose.Types.ObjectId },
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      );
+      archetypeStepsUpserted++;
+    }
+  }
+  console.log(`\nArchetype guides: ${archetypeGuidesUpserted} (${archetypeStepsUpserted} steps)`);
+
+  // ── Retire the old generic (trackId: null) weekly guides ────────────────
+  let retiredGuides = 0;
+  let retiredSteps = 0;
+  const staleGuides = await Guide.find({ slug: { $in: RETIRED_GENERIC_SLUGS } }).lean();
+  for (const stale of staleGuides) {
+    const { deletedCount } = await GuideStep.deleteMany({ guideId: stale._id });
+    retiredSteps += deletedCount ?? 0;
+    await Guide.deleteOne({ _id: stale._id });
+    retiredGuides++;
+    console.log(`Retired generic guide: ${stale.title}`);
   }
 
   console.log(`\n✓ Done`);
   console.log(`  Tracks: ${Object.keys(createdTracks).length}`);
   console.log(`  Archetypes: ${archetypeCount}`);
-  console.log(`  Guides: ${guidesUpserted} (${stepsUpserted} steps)`);
+  console.log(`  Track guides: ${guidesUpserted} (${stepsUpserted} steps)`);
+  console.log(`  Archetype guides: ${archetypeGuidesUpserted} (${archetypeStepsUpserted} steps)`);
+  if (retiredGuides > 0) {
+    console.log(`  Retired: ${retiredGuides} generic guides (${retiredSteps} steps)`);
+  }
 
   await mongoose.disconnect();
 }

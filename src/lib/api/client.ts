@@ -64,6 +64,16 @@ export interface Guide {
   retrievalTags: string[];
 }
 
+export interface Run {
+  _id: string;
+  name: string;
+  slug: string;
+  status: string;
+  weekStartDate: string;
+  currentWeek: number;
+  officeHoursUrl: string;
+}
+
 export interface Artifact {
   _id: string;
   userId: string;
@@ -138,6 +148,13 @@ export async function getGuides(params: {
   if (params.archetypeId) qs.set("archetypeId", params.archetypeId);
   const data = await request<{ guides: Guide[] }>(`/api/guides?${qs.toString()}`);
   return data.guides;
+}
+
+// --- Runs ---
+
+export async function getRun(id: string): Promise<Run> {
+  const data = await request<{ run: Run }>(`/api/runs/${id}`);
+  return data.run;
 }
 
 // --- Artifacts ---
