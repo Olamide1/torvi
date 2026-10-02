@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
 import { LeadCapture } from "@/components/pseo/LeadCapture";
-import { allPSEOPages, getPageBySlug } from "@/lib/pseo/pages";
+import { allPSEOPages, getPageBySlug, isGeneratedPage } from "@/lib/pseo/pages";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -22,6 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: page.title,
     description: page.metaDescription,
+    ...(isGeneratedPage(page) && { robots: { index: false, follow: true } }),
     openGraph: {
       title: page.title,
       description: page.metaDescription,

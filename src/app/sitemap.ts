@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { allPSEOPages } from "@/lib/pseo/pages";
+import { allPSEOPages, isGeneratedPage } from "@/lib/pseo/pages";
 import { howToGuidePages } from "@/lib/pseo/clusters/how-to-guides";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://torvilearning.online";
@@ -38,7 +38,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     })),
   ];
 
-  const pseoRoutes: MetadataRoute.Sitemap = allPSEOPages.map((page) => {
+  const pseoRoutes: MetadataRoute.Sitemap = allPSEOPages.filter((page) => !isGeneratedPage(page)).map((page) => {
     let urlPath: string;
     if (page.pageType === "role_page") {
       urlPath = `/for/${page.slug}`;

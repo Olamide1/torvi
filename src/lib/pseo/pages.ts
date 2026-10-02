@@ -494,3 +494,11 @@ export function getPageBySlug(slug: string, pageType?: PSEOPage["pageType"]): PS
   );
 }
 
+
+// Programmatic role × topic variants share one body per topic, so they are thin.
+// Keep them reachable for visitors but out of the sitemap and out of search indexes.
+const generatedPages = new Set<PSEOPage>(combinationPages);
+
+export function isGeneratedPage(page: PSEOPage): boolean {
+  return generatedPages.has(page);
+}
