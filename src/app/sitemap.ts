@@ -30,6 +30,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "weekly",
       priority: 0.7,
     },
+    ...["about", "contact", "privacy", "terms", "refund"].map((path) => ({
+      url: `${BASE_URL}/${path}`,
+      lastModified: new Date(),
+      changeFrequency: "yearly" as const,
+      priority: 0.4,
+    })),
   ];
 
   const pseoRoutes: MetadataRoute.Sitemap = allPSEOPages.map((page) => {

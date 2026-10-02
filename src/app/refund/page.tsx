@@ -51,10 +51,10 @@ export default function RefundPage() {
           <section>
             <h2 className="font-semibold mb-2">How to request a refund</h2>
             <p className="text-[#78716C]">
-              Email{" "}
-              <a href="mailto:hello@placeholderllc.name.ng" className="text-[#1D4ED8] hover:underline">
-                hello@placeholderllc.name.ng
-              </a>{" "}
+              Send a message through our{" "}
+              <Link href="/contact" className="text-[#1D4ED8] hover:underline">
+                contact page
+              </Link>{" "}
               with your purchase email address. We process refunds within 2 business days. Stripe returns the amount to your original payment method within 5–10 business days depending on your bank.
             </p>
           </section>
@@ -62,7 +62,7 @@ export default function RefundPage() {
           <section>
             <h2 className="font-semibold mb-2">VAT invoices</h2>
             <p className="text-[#78716C]">
-              Stripe issues compliant VAT invoices automatically. If you need additional documentation for employer reimbursement, email us and we will provide it.
+              Stripe issues compliant VAT invoices automatically. If you need additional documentation for employer reimbursement, contact us and we will provide it.
             </p>
           </section>
 

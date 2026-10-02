@@ -52,9 +52,9 @@ export function FAQ() {
               Common questions
             </h2>
             <p className="text-sm text-[#78716C] leading-[1.75]">
-              Anything else? Email{" "}
-              <a href="mailto:hello@placeholderllc.name.ng" className="text-[#1D4ED8] hover:underline">
-                hello@placeholderllc.name.ng
+              Anything else?{" "}
+              <a href="/contact" className="text-[#1D4ED8] hover:underline">
+                Contact us
               </a>
             </p>
           </div>

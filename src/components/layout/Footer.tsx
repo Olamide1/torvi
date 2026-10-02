@@ -31,9 +31,15 @@ export function Footer() {
           <div className="space-y-3">
             <div className="text-[11px] font-semibold text-[#44403C] uppercase tracking-[0.1em]">Support</div>
             <nav className="space-y-2">
-              {["Contact", "Refund policy", "Terms", "Privacy"].map((item) => (
-                <div key={item}>
-                  <Link href="#" className="text-sm text-[#78716C] hover:text-white transition-colors">{item}</Link>
+              {[
+                { label: "About", href: "/about" },
+                { label: "Contact", href: "/contact" },
+                { label: "Refund policy", href: "/refund" },
+                { label: "Terms", href: "/terms" },
+                { label: "Privacy", href: "/privacy" },
+              ].map((item) => (
+                <div key={item.label}>
+                  <Link href={item.href} className="text-sm text-[#78716C] hover:text-white transition-colors">{item.label}</Link>
                 </div>
               ))}
             </nav>
@@ -52,10 +58,10 @@ export function Footer() {
         </div>
 
         <div className="border-t border-[#292524] mt-12 pt-6 flex items-center justify-between text-xs text-[#57534E]">
-          <div>© {new Date().getFullYear()} Torvi. All rights reserved.</div>
+          <div>© {new Date().getFullYear()} Torvi, a product of Placeholder LLC.</div>
           <div className="flex items-center gap-5">
-            <Link href="#" className="hover:text-white transition-colors">Privacy</Link>
-            <Link href="#" className="hover:text-white transition-colors">Terms</Link>
+            <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
+            <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
           </div>
         </div>
       </div>
